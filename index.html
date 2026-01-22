@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bold Messenger Pro</title>
+    <title>Babai Messenger</title>
     
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
@@ -15,70 +15,80 @@
             --wa-msg-out: #005c4b;
             --wa-text: #e9edef;
             --wa-accent: #00a884;
-            --wa-link: #34b7f1;
+            --wa-gray: #8696a0;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: -apple-system, system-ui, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: var(--wa-bg); color: var(--wa-text);
             overflow: hidden;
         }
 
-        /* --- Login Overlay --- */
+        /* --- Login Screen --- */
         #login-screen {
             position: fixed; inset: 0; background: var(--wa-bg); z-index: 2000;
             display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
         }
 
         .login-card {
-            background: var(--wa-panel); padding: 30px; border-radius: 20px; width: 100%; max-width: 360px; text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            background: var(--wa-panel); padding: 35px 25px; border-radius: 24px; width: 100%; max-width: 380px; text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        .logo-circle {
+            width: 70px; height: 70px; background: var(--wa-accent); border-radius: 50%;
+            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px;
         }
 
         input[type="text"] {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333;
+            width: 100%; padding: 15px; margin: 12px 0; border-radius: 12px; border: 1px solid #333;
             background: #2a3942; color: white; outline: none; font-size: 16px;
         }
 
         .btn-join {
-            width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--wa-accent);
+            width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--wa-accent);
             color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px;
         }
 
-        /* --- Chat Main --- */
+        /* --- Chat UI --- */
         #chat-app { display: none; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
 
         header {
-            background: var(--wa-panel); padding: 10px 15px; display: flex; 
+            background: var(--wa-panel); padding: 10px 16px; display: flex; 
             align-items: center; justify-content: space-between; height: 65px; flex-shrink: 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .pfp { width: 40px; height: 40px; background: #4f5e67; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
         #chat-window {
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; 
-            flex-direction: column; gap: 10px;
+            flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; 
+            flex-direction: column; gap: 12px;
             background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
             background-blend-mode: overlay; background-size: 500px;
         }
 
-        .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
-        .sent { align-self: flex-end; background: var(--wa-msg-out); border-top-right-radius: 2px; }
-        .received { align-self: flex-start; background: var(--wa-msg-in); border-top-left-radius: 2px; }
+        /* Bubble Styles */
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 15.5px; line-height: 1.4; word-wrap: break-word; position: relative; }
+        .sent { align-self: flex-end; background: var(--wa-msg-out); border-top-right-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .received { align-self: flex-start; background: var(--wa-msg-in); border-top-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 
-        .sender-tag { font-size: 11px; font-weight: 700; color: var(--wa-accent); margin-bottom: 3px; }
-        .media-preview { max-width: 100%; border-radius: 10px; margin-top: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .sender-tag { font-size: 11px; font-weight: 700; color: #34b7f1; margin-bottom: 3px; display: block; }
+        .msg-meta { font-size: 10px; color: rgba(255,255,255,0.5); text-align: right; margin-top: 4px; }
+        .media-content { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
 
-        /* --- Input Bar --- */
+        /* --- Footer Fix --- */
         footer {
             background: var(--wa-panel); padding: 10px; display: flex; 
             align-items: center; gap: 12px; width: 100%; flex-shrink: 0;
             padding-bottom: calc(10px + env(safe-area-inset-bottom));
         }
 
-        .input-group {
-            flex: 1; background: #2a3942; border-radius: 25px; 
+        .input-box {
+            flex: 1; background: #2a3942; border-radius: 24px; 
             display: flex; align-items: center; padding: 0 15px;
         }
 
@@ -87,51 +97,53 @@
             padding: 12px 0; outline: none; font-size: 16px;
         }
 
-        .btn-round {
+        .action-btn {
             width: 48px; height: 48px; background: var(--wa-accent); 
             border-radius: 50%; display: flex; align-items: center; 
             justify-content: center; border: none; color: white; cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
-        #status-strip { font-size: 11px; text-align: center; background: #000; color: #aaa; padding: 5px; letter-spacing: 0.5px; }
+        #status-bar { font-size: 10px; text-align: center; background: #000; color: var(--wa-gray); padding: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h2 style="color: var(--wa-accent); margin:0;">Bold Messenger</h2>
-            <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px;">Direct P2P • No Cloud Storage</p>
-            <input type="text" id="userName" placeholder="Display Name">
-            <input type="text" id="chatCode" placeholder="Secret Room Code">
-            <button class="btn-join" id="joinBtn">START CHAT</button>
-            <p id="loader" style="display:none; color: var(--wa-accent); font-size: 12px; margin-top:15px; animation: pulse 1.5s infinite;">Searching for partner...</p>
+            <div class="logo-circle">💬</div>
+            <h1 style="color: white; margin: 0; font-size: 24px;">Babai Messenger</h1>
+            <p style="color: var(--wa-gray); font-size: 13px; margin-top: 5px; margin-bottom: 20px;">Secure Private 2-Way Chat</p>
+            
+            <input type="text" id="userName" placeholder="Enter Your Name" autocomplete="off">
+            <input type="text" id="chatCode" placeholder="Enter Secret Code" autocomplete="off">
+            <button class="btn-join" id="joinBtn">CONNECT</button>
+            
+            <p id="connecting-text" style="display:none; color: var(--wa-accent); font-size: 12px; margin-top: 15px;">Establishing P2P Tunnel...</p>
         </div>
     </div>
 
     <div id="chat-app">
-        <div id="status-strip">Network Status: Offline</div>
+        <div id="status-bar">NETWORK: INITIALIZING</div>
         <header>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 35px; height: 35px; background: #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;">👥</div>
+            <div class="header-left">
+                <div class="pfp" id="room-avatar">B</div>
                 <div>
-                    <div id="displayCode" style="font-weight: bold; font-size: 14px;">Room</div>
-                    <div id="peer-status" style="font-size: 11px; color: #888;">Connecting...</div>
+                    <div id="room-display" style="font-weight: bold; font-size: 15px;">Babai Chat</div>
+                    <div id="connection-status" style="font-size: 11px; color: var(--wa-gray);">Waiting for partner...</div>
                 </div>
             </div>
-            <div style="font-size: 20px; cursor: pointer;" onclick="location.reload()">🔚</div>
+            <div style="font-size: 22px; cursor: pointer; opacity: 0.7;" onclick="location.reload()">🚪</div>
         </header>
 
         <div id="chat-window"></div>
 
         <footer>
-            <label for="fileInput" style="font-size: 26px; cursor: pointer;">📎</label>
+            <label for="fileInput" style="font-size: 26px; cursor: pointer; opacity: 0.8;">📎</label>
             <input type="file" id="fileInput" accept="image/*,video/*" hidden>
-            <div class="input-group">
-                <input type="text" id="messageInput" placeholder="Message">
+            <div class="input-box">
+                <input type="text" id="messageInput" placeholder="Message" autocomplete="off">
             </div>
-            <button class="btn-round" id="sendBtn">🚀</button>
+            <button class="action-btn" id="sendBtn">🚀</button>
         </footer>
     </div>
 
@@ -140,7 +152,8 @@
         let myName = "";
         let secretCode = "";
 
-        const peerConfig = {
+        // WebRTC Google STUN servers for Mobile NAT Traversal
+        const iceConfig = {
             config: {
                 'iceServers': [
                     { url: 'stun:stun.l.google.com:19302' },
@@ -154,96 +167,97 @@
             myName = document.getElementById('userName').value.trim();
             secretCode = document.getElementById('chatCode').value.trim().toLowerCase();
 
-            if (!myName || !secretCode) return alert("Please enter name and code");
+            if (!myName || !secretCode) return alert("Fill Name and Code");
             
-            document.getElementById('loader').style.display = 'block';
-            const roomId = "bold-v2-" + secretCode;
-            
-            peer = new Peer(roomId, peerConfig);
+            document.getElementById('connecting-text').style.display = 'block';
+            const targetId = "babai-id-" + secretCode;
 
-            peer.on('open', () => {
-                showChat();
-                document.getElementById('status-strip').innerText = "HOSTING ROOM: " + secretCode;
+            // Attempt to be the HOST first
+            peer = new Peer(targetId, iceConfig);
+
+            peer.on('open', (id) => {
+                enterApp();
+                document.getElementById('status-bar').innerText = "HOSTING ROOM: " + secretCode.toUpperCase();
             });
 
             peer.on('error', (err) => {
                 if (err.type === 'unavailable-id') {
-                    // Host exists, join as peer
-                    peer = new Peer(null, peerConfig);
+                    // Host exists, we are the JOINER
+                    peer = new Peer(null, iceConfig);
                     peer.on('open', () => {
-                        conn = peer.connect(roomId, { reliable: true });
-                        initEvents();
-                        showChat();
+                        conn = peer.connect(targetId, { reliable: true });
+                        setupSession();
+                        enterApp();
                     });
                 } else {
-                    alert("Network Error: " + err.type);
+                    console.error(err);
+                    alert("Network Error. Check internet.");
                     location.reload();
                 }
             });
 
-            peer.on('connection', (c) => {
-                conn = c;
-                initEvents();
+            peer.on('connection', (incoming) => {
+                conn = incoming;
+                setupSession();
             });
         });
 
-        function showChat() {
+        function enterApp() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('chat-app').style.display = 'flex';
-            document.getElementById('displayCode').innerText = "Room: " + secretCode;
+            document.getElementById('room-display').innerText = "Room: " + secretCode;
+            document.getElementById('room-avatar').innerText = secretCode.charAt(0).toUpperCase();
         }
 
-        function initEvents() {
+        function setupSession() {
             conn.on('open', () => {
-                document.getElementById('status-strip').innerText = "CONNECTED SECURELY";
-                document.getElementById('status-strip').style.color = "var(--wa-accent)";
-                document.getElementById('peer-status').innerText = "Partner is online";
-                document.getElementById('peer-status').style.color = "var(--wa-accent)";
+                document.getElementById('status-bar').innerText = "CONNECTION SECURE (P2P)";
+                document.getElementById('status-bar').style.color = "var(--wa-accent)";
+                document.getElementById('connection-status').innerText = "Online";
+                document.getElementById('connection-status').style.color = "var(--wa-accent)";
                 
-                conn.send({ type: 'sys', text: myName + " joined", sender: 'System' });
-                vibratePhone(100); 
+                // Welcome message
+                conn.send({ type: 'sys', text: myName + " entered Babai Messenger" });
+                notify(100);
             });
 
             conn.on('data', (data) => {
                 appendMsg(data, 'received');
-                vibratePhone([50, 100, 50]); // Distinct vibration for new message
+                notify([60, 100, 60]);
             });
 
             conn.on('close', () => {
-                document.getElementById('status-strip').innerText = "PARTNER DISCONNECTED";
-                document.getElementById('status-strip').style.color = "#f15c5c";
-                document.getElementById('peer-status').innerText = "Offline";
+                document.getElementById('status-bar').innerText = "PARTNER DISCONNECTED";
+                document.getElementById('connection-status').innerText = "Offline";
             });
         }
 
-        function appendMsg(data, type) {
+        function appendMsg(data, role) {
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             let content = "";
 
             if (data.type === 'text' || data.type === 'sys') {
                 content = `<div>${data.text}</div>`;
             } else if (data.type === 'img') {
-                content = `<img src="${data.url}" class="media-preview">`;
+                content = `<img src="${data.url}" class="media-content">`;
             } else if (data.type === 'vid') {
-                content = `<video src="${data.url}" controls class="media-preview"></video>`;
+                content = `<video src="${data.url}" controls class="media-content"></video>`;
             }
 
-            const bubble = `
-                <div class="msg ${type === 'sent' ? 'sent' : 'received'}">
-                    <div class="sender-tag">${type === 'sent' ? 'You' : data.sender}</div>
+            const html = `
+                <div class="msg ${role === 'sent' ? 'sent' : 'received'}">
+                    ${role === 'received' ? `<span class="sender-tag">${data.sender || 'Partner'}</span>` : ''}
                     ${content}
-                    <div style="font-size:10px; opacity:0.4; text-align:right; margin-top:5px;">${time}</div>
+                    <div class="msg-meta">${time}</div>
                 </div>
             `;
-            const win = document.getElementById('chat-window');
-            win.innerHTML += bubble;
-            win.scrollTo({ top: win.scrollHeight, behavior: 'smooth' });
+            const window = document.getElementById('chat-window');
+            window.innerHTML += html;
+            window.scrollTo({ top: window.scrollHeight, behavior: 'smooth' });
         }
 
-        function vibratePhone(pattern) {
-            if ("vibrate" in navigator) {
-                navigator.vibrate(pattern);
-            }
+        function notify(pattern) {
+            if ("vibrate" in navigator) navigator.vibrate(pattern);
         }
 
         document.getElementById('sendBtn').addEventListener('click', () => {
@@ -251,30 +265,29 @@
             const val = input.value.trim();
             if (!val || !conn) return;
 
-            const d = { type: 'text', text: val, sender: myName };
-            conn.send(d);
-            appendMsg(d, 'sent');
+            const packet = { type: 'text', text: val, sender: myName };
+            conn.send(packet);
+            appendMsg(packet, 'sent');
             input.value = "";
         });
 
         document.getElementById('fileInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file || !conn) return;
-            
+
             const reader = new FileReader();
             reader.onload = () => {
-                const d = {
+                const packet = {
                     type: file.type.startsWith('image') ? 'img' : 'vid',
                     url: reader.result,
                     sender: myName
                 };
-                conn.send(d);
-                appendMsg(d, 'sent');
+                conn.send(packet);
+                appendMsg(packet, 'sent');
             };
             reader.readAsDataURL(file);
         });
 
-        // Mobile Fix: prevent UI bounce on keyboard
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') document.getElementById('sendBtn').click();
         });
