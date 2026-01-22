@@ -12,65 +12,90 @@
             --wa-msg-out: #005c4b; --wa-accent: #00a884; --wa-text: #e9edef;
             --wa-gray: #8696a0; --wa-danger: #ea0038;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: sans-serif; background: var(--wa-bg); color: var(--wa-text); overflow: hidden; }
 
-        /* --- Login --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        /* Layout Fix: 100dvh ensures it fits mobile screens perfectly */
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100dvh; 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--wa-bg); color: var(--wa-text); overflow: hidden;
+        }
+
+        /* Login Screen */
         #login-screen { position: fixed; inset: 0; background: var(--wa-bg); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: var(--wa-panel); padding: 35px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; }
-        input[type="text"] { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #2a3942; color: white; font-size: 16px; }
+        .login-card { background: var(--wa-panel); padding: 30px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input[type="text"] { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #2a3942; color: white; font-size: 16px; outline: none; }
         .btn-join { width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--wa-accent); color: white; font-weight: bold; cursor: pointer; }
 
-        /* --- Chat UI --- */
-        #chat-app { display: none; flex-direction: column; height: 100vh; }
-        header { background: var(--wa-panel); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; height: 65px; }
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; }
-        
+        /* Main App Container */
+        #chat-app { display: none; flex-direction: column; height: 100dvh; width: 100%; }
+
+        header { 
+            background: var(--wa-panel); padding: 0 15px; display: flex; 
+            align-items: center; justify-content: space-between; height: 60px; flex-shrink: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #chat-window { 
+            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-blend-mode: overlay; background-size: 400px;
+        }
+
         /* Message Bubbles */
-        .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 15px; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 15px; line-height: 1.4; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
         .sent { align-self: flex-end; background: var(--wa-msg-out); border-top-right-radius: 2px; }
         .received { align-self: flex-start; background: var(--wa-msg-in); border-top-left-radius: 2px; }
-        .sender-name { font-size: 11px; font-weight: bold; color: #34b7f1; display: block; margin-bottom: 3px; }
-        .media-content { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        .sender-tag { font-size: 11px; font-weight: bold; color: #34b7f1; display: block; margin-bottom: 2px; }
+        .media-content { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
 
-        /* --- Call Overlay --- */
-        #call-overlay { position: fixed; inset: 0; background: #000; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        /* Call Overlay */
+        #call-overlay { position: fixed; inset: 0; background: #000; z-index: 1500; display: none; flex-direction: column; }
         #remote-video { width: 100%; height: 100%; object-fit: cover; }
-        #local-video { position: absolute; top: 20px; right: 20px; width: 120px; height: 180px; background: #222; border-radius: 10px; object-fit: cover; transform: scaleX(-1); border: 2px solid var(--wa-accent); }
-        .call-tools { position: absolute; bottom: 40px; display: flex; gap: 20px; }
-        .hangup { width: 65px; height: 65px; background: var(--wa-danger); border-radius: 50%; border: none; font-size: 28px; cursor: pointer; color: white; }
+        #local-video { 
+            position: absolute; top: 20px; right: 20px; width: 100px; height: 140px; 
+            border-radius: 12px; object-fit: cover; transform: scaleX(-1); 
+            border: 2px solid var(--wa-accent); background: #222;
+        }
+        .call-btn-bar { position: absolute; bottom: 50px; left: 0; right: 0; display: flex; justify-content: center; }
+        .hangup-btn { width: 65px; height: 65px; background: var(--wa-danger); border-radius: 50%; border: none; color: white; font-size: 30px; cursor: pointer; }
 
-        /* --- Footer --- */
-        footer { background: var(--wa-panel); padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .input-wrap { flex: 1; background: #2a3942; border-radius: 25px; padding: 0 15px; display: flex; align-items: center; }
+        /* Footer / Input Area */
+        footer { 
+            background: var(--wa-panel); padding: 8px 12px; display: flex; 
+            align-items: center; gap: 10px; flex-shrink: 0;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
+        }
+        .input-box { flex: 1; background: #2a3942; border-radius: 25px; padding: 0 15px; display: flex; align-items: center; }
         #messageInput { flex: 1; border: none; background: transparent; color: white; padding: 12px 0; outline: none; font-size: 16px; }
-        .attach-btn { font-size: 24px; cursor: pointer; opacity: 0.8; }
-        .send-btn { background: var(--wa-accent); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px; }
+        .icon-btn { font-size: 24px; cursor: pointer; color: var(--wa-gray); }
+        .send-btn { background: var(--wa-accent); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h1 style="color: var(--wa-accent); margin: 0 0 10px;">Babai Messenger</h1>
+            <h2 style="color: var(--wa-accent); margin-bottom: 20px;">Babai Messenger</h2>
             <input type="text" id="userName" placeholder="Your Name">
-            <input type="text" id="chatCode" placeholder="Secret Room Code">
-            <button class="btn-join" id="joinBtn">START CHATTING</button>
+            <input type="text" id="chatCode" placeholder="Room Code">
+            <button class="btn-join" id="joinBtn">CONNECT</button>
         </div>
     </div>
 
     <div id="call-overlay">
         <video id="remote-video" autoplay playsinline></video>
         <video id="local-video" autoplay muted playsinline></video>
-        <div class="call-tools"><button class="hangup" onclick="endCall()">📵</button></div>
+        <div class="call-btn-bar"><button class="hangup-btn" onclick="endCall()">📵</button></div>
     </div>
 
     <div id="chat-app">
         <header>
-            <div style="font-weight: bold;" id="display-code">Room</div>
-            <div style="display: flex; gap: 20px;">
-                <span onclick="startCall(true)" style="cursor:pointer; font-size: 20px;">📹</span>
-                <span onclick="startCall(false)" style="cursor:pointer; font-size: 20px;">📞</span>
+            <div id="room-header" style="font-weight: bold;">Babai Chat</div>
+            <div style="display: flex; gap: 18px;">
+                <span onclick="initiateCall(true)" style="cursor:pointer; font-size: 20px;">📹</span>
+                <span onclick="initiateCall(false)" style="cursor:pointer; font-size: 20px;">📞</span>
                 <span onclick="location.reload()" style="cursor:pointer; font-size: 20px;">🚪</span>
             </div>
         </header>
@@ -78,10 +103,10 @@
         <div id="chat-window"></div>
 
         <footer>
-            <label class="attach-btn" for="fileInput">📎</label>
+            <label class="icon-btn" for="fileInput">📎</label>
             <input type="file" id="fileInput" accept="image/*,video/*" hidden>
-            <div class="input-wrap">
-                <input type="text" id="messageInput" placeholder="Type a message">
+            <div class="input-box">
+                <input type="text" id="messageInput" placeholder="Message">
             </div>
             <button class="send-btn" id="sendBtn">🚀</button>
         </footer>
@@ -91,59 +116,63 @@
         let peer, conn, currentCall, myStream;
         let myName, secretCode;
 
+        const peerOptions = { config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} };
+
         document.getElementById('joinBtn').onclick = () => {
             myName = document.getElementById('userName').value.trim();
             secretCode = document.getElementById('chatCode').value.trim().toLowerCase();
-            if(!myName || !secretCode) return alert("Enter Name & Code");
+            if(!myName || !secretCode) return alert("Enter both fields");
 
-            const roomId = "babai-final-" + secretCode;
-            peer = new Peer(roomId, { config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
+            const roomId = "babai-v4-" + secretCode;
+            peer = new Peer(roomId, peerOptions);
 
-            peer.on('open', () => { showApp(); });
+            peer.on('open', () => { launchApp(); });
             peer.on('error', (err) => {
                 if (err.type === 'unavailable-id') {
-                    peer = new Peer(null);
+                    peer = new Peer(null, peerOptions);
                     peer.on('open', () => {
                         conn = peer.connect(roomId);
-                        setupConn();
-                        showApp();
+                        setupDataEvents();
+                        launchApp();
                     });
-                }
+                } else { alert("Network Error: " + err.type); }
             });
 
-            peer.on('connection', (c) => { conn = c; setupConn(); });
+            peer.on('connection', (c) => { conn = c; setupDataEvents(); });
             
             peer.on('call', async (call) => {
-                if(confirm("Incoming call from partner. Answer?")) {
-                    myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                    call.answer(myStream);
-                    handleCall(call);
+                if(confirm("Incoming Call! Accept?")) {
+                    try {
+                        myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                        call.answer(myStream);
+                        handleStream(call);
+                    } catch(e) { alert("Mic/Cam Error"); }
                 }
             });
         };
 
-        function showApp() {
+        function launchApp() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('chat-app').style.display = 'flex';
-            document.getElementById('display-code').innerText = "Room: " + secretCode;
+            document.getElementById('room-header').innerText = "Room: " + secretCode;
         }
 
-        function setupConn() {
+        function setupDataEvents() {
             conn.on('data', (data) => {
-                appendMsg(data, 'received');
-                if("vibrate" in navigator) navigator.vibrate([50, 100, 50]);
+                renderMsg(data, 'received');
+                if("vibrate" in navigator) navigator.vibrate([40, 80, 40]);
             });
         }
 
-        async function startCall(video) {
+        async function initiateCall(videoPref) {
             try {
-                myStream = await navigator.mediaDevices.getUserMedia({ video: video, audio: true });
-                const call = peer.call("babai-final-" + secretCode, myStream);
-                handleCall(call);
-            } catch (e) { alert("Please allow camera/mic access."); }
+                myStream = await navigator.mediaDevices.getUserMedia({ video: videoPref, audio: true });
+                const call = peer.call("babai-v4-" + secretCode, myStream);
+                handleStream(call);
+            } catch(e) { alert("Could not access camera/microphone."); }
         }
 
-        function handleCall(call) {
+        function handleStream(call) {
             currentCall = call;
             document.getElementById('call-overlay').style.display = 'flex';
             document.getElementById('local-video').srcObject = myStream;
@@ -158,16 +187,17 @@
             document.getElementById('call-overlay').style.display = 'none';
         }
 
-        function appendMsg(data, type) {
+        function renderMsg(data, role) {
             const win = document.getElementById('chat-window');
-            let content = data.type === 'text' ? `<div>${data.text}</div>` : 
-                          data.type === 'img' ? `<img src="${data.url}" class="media-content">` :
-                          `<video src="${data.url}" controls class="media-content"></video>`;
-            
+            let body = "";
+            if(data.type === 'text') body = `<div>${data.text}</div>`;
+            else if(data.type === 'img') body = `<img src="${data.url}" class="media-content">`;
+            else if(data.type === 'vid') body = `<video src="${data.url}" controls class="media-content"></video>`;
+
             win.innerHTML += `
-                <div class="msg ${type}">
-                    <span class="sender-name">${data.sender}</span>
-                    ${content}
+                <div class="msg ${role}">
+                    <span class="sender-tag">${data.sender}</span>
+                    ${body}
                 </div>`;
             win.scrollTop = win.scrollHeight;
         }
@@ -175,9 +205,9 @@
         document.getElementById('sendBtn').onclick = () => {
             const msg = document.getElementById('messageInput').value;
             if(!msg || !conn) return;
-            const data = { type: 'text', text: msg, sender: myName };
-            conn.send(data);
-            appendMsg(data, 'sent');
+            const pkg = { type: 'text', text: msg, sender: myName };
+            conn.send(pkg);
+            renderMsg(pkg, 'sent');
             document.getElementById('messageInput').value = "";
         };
 
@@ -185,9 +215,13 @@
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = () => {
-                const data = { type: file.type.startsWith('image') ? 'img' : 'vid', url: reader.result, sender: myName };
-                conn.send(data);
-                appendMsg(data, 'sent');
+                const pkg = { 
+                    type: file.type.startsWith('image') ? 'img' : 'vid', 
+                    url: reader.result, 
+                    sender: myName 
+                };
+                conn.send(pkg);
+                renderMsg(pkg, 'sent');
             };
             reader.readAsDataURL(file);
         };
