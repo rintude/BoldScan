@@ -3,175 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bold Scanner Pro</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script async src="https://docs.opencv.org/4.7.0/opencv.js" type="text/javascript"></script>
+    <title>Bold Messenger Pro</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
     <style>
-        :root { --primary: #007AFF; --bg: #000; --surface: #1C1C1E; --text: #FFF; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        header { padding: 15px; background: #1c1c1e; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        #viewport { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; position: relative; overflow: hidden; }
-        canvas { max-width: 100%; max-height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .controls { background: var(--surface); padding: 20px; display: flex; flex-direction: column; gap: 15px; border-radius: 20px 20px 0 0; }
-        .btn-group { display: flex; justify-content: space-around; align-items: center; }
-        .filter-row { display: none; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
-        .filter-btn { background: #333; border: none; color: white; padding: 8px 15px; border-radius: 10px; white-space: nowrap; font-size: 12px; }
-        .active { background: var(--primary) !important; }
-        .main-btn { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; width: 100%; }
-        #loading { position: absolute; text-align: center; width: 100%; }
-        input[type="file"] { display: none; }
+        :root {
+            --wa-bg: #0b141a;
+            --wa-panel: #202c33;
+            --wa-msg-in: #202c33;
+            --wa-msg-out: #005c4b;
+            --wa-text: #e9edef;
+            --wa-accent: #00a884;
+            --wa-danger: #f15c5c;
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background-color: var(--wa-bg); color: var(--wa-text); overflow: hidden; }
+
+        /* --- Login Screen --- */
+        #login-screen {
+            position: fixed; inset: 0; background: var(--wa-bg); z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+
+        .login-card {
+            background: var(--wa-panel); padding: 30px; border-radius: 15px; width: 100%; max-width: 350px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        input {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333;
+            background: #2a3942; color: white; box-sizing: border-box; outline: none;
+        }
+
+        .btn-join {
+            width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--wa-accent);
+            color: white; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s;
+        }
+
+        /* --- Chat UI --- */
+        #chat-app { display: none; flex-direction: column; height: 100vh; }
+
+        header {
+            background: var(--wa-panel); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 10;
+        }
+
+        .header-info { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 40px; height: 40px; background: #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        #chat-window {
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-blend-mode: overlay; background-size: contain;
+        }
+
+        /* Bubbles */
+        .msg { max-width: 75%; padding: 8px 12px; border-radius: 12px; position: relative; font-size: 15px; line-height: 1.4; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .sent { align-self: flex-end; background: var(--wa-msg-out); border-top-right-radius: 2px; }
+        .received { align-self: flex-start; background: var(--wa-msg-in); border-top-left-radius: 2px; }
+
+        .msg-info { font-size: 10px; opacity: 0.6; text-align: right; margin-top: 5px; }
+        .sender-name { font-size: 11px; font-weight: bold; color: #ffcc00; margin-bottom: 3px; }
+        .media-content { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid rgba(255,255,255,0.1); }
+
+        /* Footer */
+        footer { background: var(--wa-panel); padding: 10px; display: flex; align-items: center; gap: 12px; }
+        #messageInput { flex: 1; border: none; padding: 12px 18px; border-radius: 24px; outline: none; background: #2a3942; color: white; }
+        
+        .icon-btn { cursor: pointer; font-size: 22px; opacity: 0.8; transition: 0.2s; }
+        .icon-btn:hover { transform: scale(1.1); opacity: 1; }
+        .danger-text { color: var(--wa-danger); font-size: 12px; cursor: pointer; padding: 5px; }
+        
+        #fileInput { display: none; }
+        #upload-progress { position: fixed; top: 0; left: 0; height: 4px; background: #34b7f1; width: 0%; transition: 0.3s; z-index: 2000; }
     </style>
 </head>
 <body>
 
-<header>
-    <div style="font-weight: 800; color: var(--primary)">BOLD SCANNER</div>
-    <div id="status" style="font-size: 12px; opacity: 0.6">Engine Offline</div>
-</header>
+    <div id="upload-progress"></div>
 
-<div id="viewport">
-    <div id="loading"><h3>Awaiting Image...</h3><p>Ensure OpenCV is loaded (Green dot)</p></div>
-    <canvas id="canvasOutput"></canvas>
-</div>
-
-<div class="controls">
-    <div class="filter-row" id="filterRow">
-        <button class="filter-btn active" onclick="applyEffect('scan')">Auto-Scan</button>
-        <button class="filter-btn" onclick="applyEffect('magic')">Magic White</button>
-        <button class="filter-btn" onclick="applyEffect('bw')">B&W</button>
-        <button class="filter-btn" onclick="applyEffect('orig')">Original</button>
+    <div id="login-screen">
+        <div class="login-card">
+            <h1 style="color: var(--wa-accent); margin-bottom: 5px;">Bold Messenger</h1>
+            <p style="font-size: 13px; opacity: 0.7; margin-bottom: 20px;">Private 2-User Secure Communication</p>
+            <input type="text" id="userName" placeholder="Your Display Name">
+            <input type="text" id="chatCode" placeholder="Enter Secret Code">
+            <button class="btn-join" onclick="initChat()">START CHATTING</button>
+        </div>
     </div>
-    <div class="btn-group">
-        <button class="main-btn" onclick="document.getElementById('fileInput').click()">UPLOAD / CAPTURE</button>
-        <button id="dlBtn" style="display:none; width: 50px; height: 50px; border-radius: 50%; border: none; background: #333; color: white; margin-left: 10px;" onclick="exportPDF()">PDF</button>
+
+    <div id="chat-app">
+        <header>
+            <div class="header-info">
+                <div class="avatar" id="room-avatar">#</div>
+                <div>
+                    <div id="room-title" style="font-weight: bold;">Room Name</div>
+                    <div style="font-size: 12px; color: var(--wa-accent)">Active Connection</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <span class="danger-text" onclick="clearAllMessages()">Clear Chat</span>
+                <span class="icon-btn" onclick="location.reload()">🚪</span>
+            </div>
+        </header>
+
+        <div id="chat-window"></div>
+
+        <footer>
+            <label class="icon-btn" for="fileInput">📎</label>
+            <input type="file" id="fileInput" accept="image/*,video/*,image/gif">
+            <input type="text" id="messageInput" placeholder="Type a message">
+            <div class="icon-btn" onclick="sendMessage()">🚀</div>
+        </footer>
     </div>
-</div>
 
-<input type="file" id="fileInput" accept="image/*">
-
-<script>
-let srcMat, scanMat;
-const canvas = document.getElementById('canvasOutput');
-
-var Module = {
-    onRuntimeInitialized() {
-        document.getElementById('status').innerHTML = "<span style='color:#30D158'>●</span> Engine Ready";
-    }
-};
-
-document.getElementById('fileInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('filterRow').style.display = 'flex';
-            document.getElementById('dlBtn').style.display = 'block';
-            srcMat = cv.imread(img);
-            performPerspectiveWarp(srcMat);
+    <script>
+        // --- !!! UPDATE THESE WITH YOUR FIREBASE CONFIG !!! ---
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-});
 
-function performPerspectiveWarp(src) {
-    let dst = new cv.Mat();
-    let gray = new cv.Mat();
-    let blurred = new cv.Mat();
-    let edged = new cv.Mat();
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
 
-    // 1. Pre-process
-    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-    cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
-    cv.Canny(blurred, edged, 75, 200);
+        let currentUser = "";
+        let currentRoom = "";
+        let unsubscribe = null;
 
-    // 2. Find Contours
-    let contours = new cv.MatVector();
-    let hierarchy = new cv.Mat();
-    cv.findContours(edged, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        function initChat() {
+            currentUser = document.getElementById('userName').value.trim();
+            currentRoom = document.getElementById('chatCode').value.trim();
 
-    let maxArea = 0;
-    let biggestContour = null;
+            if(!currentUser || !currentRoom) return alert("Please enter both Name and Code");
 
-    for (let i = 0; i < contours.size(); i++) {
-        let cnt = contours.get(i);
-        let area = cv.contourArea(cnt);
-        let peri = cv.arcLength(cnt, true);
-        let approx = new cv.Mat();
-        cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('chat-app').style.display = 'flex';
+            document.getElementById('room-title').innerText = "Code: " + currentRoom;
+            document.getElementById('room-avatar').innerText = currentRoom.charAt(0).toUpperCase();
 
-        if (area > maxArea && approx.rows === 4) {
-            maxArea = area;
-            biggestContour = approx;
-        }
-    }
-
-    if (biggestContour) {
-        // 3. Perspective Warp Logic
-        let corners = [];
-        for (let i = 0; i < 4; i++) {
-            corners.push({ x: biggestContour.data32S[i * 2], y: biggestContour.data32S[i * 2 + 1] });
+            loadMessages();
         }
 
-        // Sort corners: top-left, top-right, bottom-right, bottom-left
-        corners.sort((a, b) => a.y - b.y);
-        let tl = corners[0].x < corners[1].x ? corners[0] : corners[1];
-        let tr = corners[0].x < corners[1].x ? corners[1] : corners[0];
-        let bl = corners[2].x < corners[3].x ? corners[2] : corners[3];
-        let br = corners[2].x < corners[3].x ? corners[3] : corners[2];
+        function loadMessages() {
+            // Unsubscribe from previous room if any
+            if(unsubscribe) unsubscribe();
 
-        let width = Math.max(Math.hypot(br.x - bl.x, br.y - bl.y), Math.hypot(tr.x - tl.x, tr.y - tl.y));
-        let height = Math.max(Math.hypot(tr.y - br.y, tr.x - br.x), Math.hypot(tl.y - bl.y, tl.x - bl.x));
+            unsubscribe = db.collection("chats").doc(currentRoom).collection("messages")
+              .orderBy("timestamp", "asc")
+              .onSnapshot((snapshot) => {
+                  const window = document.getElementById('chat-window');
+                  window.innerHTML = "";
+                  snapshot.forEach((doc) => {
+                      appendMessage(doc.data());
+                  });
+                  window.scrollTop = window.scrollHeight;
+              });
+        }
 
-        let srcCoords = cv.matFromArray(4, 1, cv.CV_32FC2, [tl.x, tl.y, tr.x, tr.y, br.x, br.y, bl.x, bl.y]);
-        let dstCoords = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, width, 0, width, height, 0, height]);
+        function appendMessage(data) {
+            const container = document.getElementById('chat-window');
+            const isMe = data.sender === currentUser;
+            const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "...";
+            
+            let content = `<div>${data.text}</div>`;
+            
+            if(data.type === 'image' || data.type === 'gif') {
+                content = `<img src="${data.url}" class="media-content" loading="lazy">`;
+            } else if(data.type === 'video') {
+                content = `<video src="${data.url}" controls class="media-content"></video>`;
+            }
 
-        let M = cv.getPerspectiveTransform(srcCoords, dstCoords);
-        let dsize = new cv.Size(width, height);
-        cv.warpPerspective(src, dst, M, dsize);
-        
-        scanMat = dst.clone();
-        cv.imshow('canvasOutput', scanMat);
-        
-        // Cleanup warping mats
-        M.delete(); srcCoords.delete(); dstCoords.delete();
-    } else {
-        // Fallback if no 4-corner shape found
-        scanMat = src.clone();
-        cv.imshow('canvasOutput', scanMat);
-    }
+            const html = `
+                <div class="msg ${isMe ? 'sent' : 'received'}">
+                    <div class="sender-name">${isMe ? 'You' : data.sender}</div>
+                    ${content}
+                    <div class="msg-info">${time}</div>
+                </div>
+            `;
+            container.innerHTML += html;
+        }
 
-    // Cleanup detection mats
-    gray.delete(); blurred.delete(); edged.delete(); contours.delete(); hierarchy.delete();
-}
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if(!input.value.trim()) return;
 
-function applyEffect(type) {
-    let out = new cv.Mat();
-    if (type === 'magic') {
-        scanMat.convertTo(out, -1, 1.3, 30); // Brighten & Contrast
-    } else if (type === 'bw') {
-        cv.cvtColor(scanMat, out, cv.COLOR_RGBA2GRAY);
-        cv.threshold(out, out, 120, 255, cv.THRESH_BINARY);
-    } else if (type === 'orig') {
-        cv.imshow('canvasOutput', srcMat);
-        return;
-    } else {
-        out = scanMat.clone();
-    }
-    cv.imshow('canvasOutput', out);
-    out.delete();
-}
+            const msg = {
+                sender: currentUser,
+                text: input.value,
+                type: 'text',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
 
-function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const imgData = canvas.toDataURL('image/jpeg', 0.9);
-    const pdf = new jsPDF(canvas.width > canvas.height ? 'l' : 'p', 'px', [canvas.width, canvas.height]);
-    pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
-    pdf.save("BoldScan.pdf");
-}
-</script>
+            input.value = "";
+            await db.collection("chats").doc(currentRoom).collection("messages").add(msg);
+        }
+
+        // --- Multi-Media Logic ---
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            // Video Duration Check
+            if(file.type.includes('video')) {
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.onloadedmetadata = function() {
+                    window.URL.revokeObjectURL(video.src);
+                    if (video.duration > 300) {
+                        alert("Video exceeds 5-minute limit!");
+                        return;
+                    }
+                    uploadFile(file);
+                }
+                video.src = URL.createObjectURL(file);
+            } else {
+                uploadFile(file);
+            }
+        });
+
+        async function uploadFile(file) {
+            let type = 'image';
+            if(file.type.includes('video')) type = 'video';
+            if(file.type.includes('gif')) type = 'gif';
+
+            const storageRef = storage.ref(`bold_messenger/${currentRoom}/${Date.now()}_${file.name}`);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed', 
+                (snap) => {
+                    const progress = (snap.bytesTransferred / snap.totalBytes) * 100;
+                    document.getElementById('upload-progress').style.width = progress + "%";
+                }, 
+                (err) => alert("Upload failed: " + err.message), 
+                async () => {
+                    const url = await uploadTask.snapshot.ref.getDownloadURL();
+                    await db.collection("chats").doc(currentRoom).collection("messages").add({
+                        sender: currentUser,
+                        url: url,
+                        type: type,
+                        text: '',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    document.getElementById('upload-progress').style.width = "0%";
+                }
+            );
+        }
+
+        // --- Clear Chat Logic ---
+        async function clearAllMessages() {
+            if(!confirm("Are you sure? This will delete all messages for BOTH users in this room.")) return;
+
+            const snapshot = await db.collection("chats").doc(currentRoom).collection("messages").get();
+            const batch = db.batch();
+            
+            snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+
+            await batch.commit();
+            alert("Chat room cleared!");
+        }
+
+        document.getElementById("messageInput").addEventListener("keyup", (e) => { if (e.key === "Enter") sendMessage(); });
+    </script>
 </body>
 </html>
