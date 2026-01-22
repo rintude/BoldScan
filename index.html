@@ -3,188 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Babai Messenger | Call</title>
+    <title>Babai Messenger</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
     <style>
         :root {
-            --wa-bg: #0b141a;
-            --wa-panel: #202c33;
-            --wa-msg-in: #202c33;
-            --wa-msg-out: #005c4b;
-            --wa-accent: #00a884;
-            --wa-text: #e9edef;
-            --wa-danger: #ea0038;
+            --wa-bg: #0b141a; --wa-panel: #202c33; --wa-msg-in: #202c33;
+            --wa-msg-out: #005c4b; --wa-accent: #00a884; --wa-text: #e9edef;
+            --wa-gray: #8696a0; --wa-danger: #ea0038;
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: -apple-system, sans-serif; background: var(--wa-bg); color: var(--wa-text); overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: sans-serif; background: var(--wa-bg); color: var(--wa-text); overflow: hidden; }
 
-        /* --- Login/Chat UI (Same as before) --- */
-        #login-screen { position: fixed; inset: 0; background: var(--wa-bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: var(--wa-panel); padding: 30px; border-radius: 20px; width: 100%; max-width: 360px; text-align: center; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #2a3942; color: white; font-size: 16px; outline: none; }
+        /* --- Login --- */
+        #login-screen { position: fixed; inset: 0; background: var(--wa-bg); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--wa-panel); padding: 35px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; }
+        input[type="text"] { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #2a3942; color: white; font-size: 16px; }
         .btn-join { width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--wa-accent); color: white; font-weight: bold; cursor: pointer; }
 
-        #chat-app { display: none; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
-        header { background: var(--wa-panel); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; height: 65px; border-bottom: 1px solid #333; }
-        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; }
-        .msg { max-width: 80%; padding: 10px; border-radius: 12px; font-size: 15px; line-height: 1.4; }
-        .sent { align-self: flex-end; background: var(--wa-msg-out); }
-        .received { align-self: flex-start; background: var(--wa-msg-in); }
+        /* --- Chat UI --- */
+        #chat-app { display: none; flex-direction: column; height: 100vh; }
+        header { background: var(--wa-panel); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; height: 65px; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; }
+        
+        /* Message Bubbles */
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 15px; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .sent { align-self: flex-end; background: var(--wa-msg-out); border-top-right-radius: 2px; }
+        .received { align-self: flex-start; background: var(--wa-msg-in); border-top-left-radius: 2px; }
+        .sender-name { font-size: 11px; font-weight: bold; color: #34b7f1; display: block; margin-bottom: 3px; }
+        .media-content { max-width: 100%; border-radius: 8px; margin-top: 5px; }
 
-        /* --- Calling UI --- */
-        #call-overlay {
-            position: fixed; inset: 0; background: #000; z-index: 1500; display: none;
-            flex-direction: column; align-items: center; justify-content: center;
-        }
+        /* --- Call Overlay --- */
+        #call-overlay { position: fixed; inset: 0; background: #000; z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; }
         #remote-video { width: 100%; height: 100%; object-fit: cover; }
-        #local-video {
-            position: absolute; top: 20px; right: 20px; width: 100px; height: 150px;
-            background: #222; border-radius: 10px; object-fit: cover; 
-            transform: scaleX(-1); /* Mirror view */
-            border: 2px solid var(--wa-accent);
-        }
-        .call-controls {
-            position: absolute; bottom: 40px; display: flex; gap: 20px;
-        }
-        .btn-call { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-hangup { background: var(--wa-danger); }
-        .btn-cam { background: #444; }
+        #local-video { position: absolute; top: 20px; right: 20px; width: 120px; height: 180px; background: #222; border-radius: 10px; object-fit: cover; transform: scaleX(-1); border: 2px solid var(--wa-accent); }
+        .call-tools { position: absolute; bottom: 40px; display: flex; gap: 20px; }
+        .hangup { width: 65px; height: 65px; background: var(--wa-danger); border-radius: 50%; border: none; font-size: 28px; cursor: pointer; color: white; }
 
-        footer { background: var(--wa-panel); padding: 10px; display: flex; gap: 10px; align-items: center; }
-        .input-box { flex: 1; background: #2a3942; border-radius: 20px; padding: 0 15px; }
-        #messageInput { width: 100%; border: none; background: transparent; color: white; padding: 10px 0; outline: none; }
+        /* --- Footer --- */
+        footer { background: var(--wa-panel); padding: 10px; display: flex; align-items: center; gap: 10px; }
+        .input-wrap { flex: 1; background: #2a3942; border-radius: 25px; padding: 0 15px; display: flex; align-items: center; }
+        #messageInput { flex: 1; border: none; background: transparent; color: white; padding: 12px 0; outline: none; font-size: 16px; }
+        .attach-btn { font-size: 24px; cursor: pointer; opacity: 0.8; }
+        .send-btn { background: var(--wa-accent); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h2 style="color: var(--wa-accent)">Babai Messenger</h2>
+            <h1 style="color: var(--wa-accent); margin: 0 0 10px;">Babai Messenger</h1>
             <input type="text" id="userName" placeholder="Your Name">
-            <input type="text" id="chatCode" placeholder="Secret Code">
-            <button class="btn-join" id="joinBtn">CONNECT</button>
+            <input type="text" id="chatCode" placeholder="Secret Room Code">
+            <button class="btn-join" id="joinBtn">START CHATTING</button>
         </div>
     </div>
 
     <div id="call-overlay">
         <video id="remote-video" autoplay playsinline></video>
         <video id="local-video" autoplay muted playsinline></video>
-        <div class="call-controls">
-            <button class="btn-call btn-hangup" onclick="endCall()">🚫</button>
-        </div>
+        <div class="call-tools"><button class="hangup" onclick="endCall()">📵</button></div>
     </div>
 
     <div id="chat-app">
         <header>
-            <div id="room-info"><b>Babai Messenger</b></div>
-            <div style="display: flex; gap: 15px;">
-                <button onclick="startCall(true)" style="background:none; border:none; font-size:20px; cursor:pointer;">📹</button>
-                <button onclick="startCall(false)" style="background:none; border:none; font-size:20px; cursor:pointer;">📞</button>
+            <div style="font-weight: bold;" id="display-code">Room</div>
+            <div style="display: flex; gap: 20px;">
+                <span onclick="startCall(true)" style="cursor:pointer; font-size: 20px;">📹</span>
+                <span onclick="startCall(false)" style="cursor:pointer; font-size: 20px;">📞</span>
+                <span onclick="location.reload()" style="cursor:pointer; font-size: 20px;">🚪</span>
             </div>
         </header>
 
         <div id="chat-window"></div>
 
         <footer>
-            <div class="input-box"><input type="text" id="messageInput" placeholder="Message"></div>
-            <button onclick="sendMessage()" style="background:var(--wa-accent); border:none; color:white; padding:10px 15px; border-radius:50%;">🚀</button>
+            <label class="attach-btn" for="fileInput">📎</label>
+            <input type="file" id="fileInput" accept="image/*,video/*" hidden>
+            <div class="input-wrap">
+                <input type="text" id="messageInput" placeholder="Type a message">
+            </div>
+            <button class="send-btn" id="sendBtn">🚀</button>
         </footer>
     </div>
 
     <script>
-        let peer, conn, currentCall;
-        let myStream;
+        let peer, conn, currentCall, myStream;
         let myName, secretCode;
 
-        const config = { config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } };
-
-        document.getElementById('joinBtn').addEventListener('click', () => {
+        document.getElementById('joinBtn').onclick = () => {
             myName = document.getElementById('userName').value.trim();
             secretCode = document.getElementById('chatCode').value.trim().toLowerCase();
-            if (!myName || !secretCode) return alert("Fill Name and Code");
+            if(!myName || !secretCode) return alert("Enter Name & Code");
 
-            const roomId = "babai-call-" + secretCode;
-            peer = new Peer(roomId, config);
+            const roomId = "babai-final-" + secretCode;
+            peer = new Peer(roomId, { config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
 
-            peer.on('open', () => { showChat(); });
+            peer.on('open', () => { showApp(); });
             peer.on('error', (err) => {
                 if (err.type === 'unavailable-id') {
-                    peer = new Peer(null, config);
+                    peer = new Peer(null);
                     peer.on('open', () => {
                         conn = peer.connect(roomId);
-                        setupEvents();
-                        showChat();
+                        setupConn();
+                        showApp();
                     });
                 }
             });
 
-            peer.on('connection', (c) => { conn = c; setupEvents(); });
+            peer.on('connection', (c) => { conn = c; setupConn(); });
             
-            // Handle Incoming Call
-            peer.on('call', (call) => {
-                if(confirm("Incoming Call from Partner! Answer?")) {
-                    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-                        myStream = stream;
-                        call.answer(stream);
-                        document.getElementById('call-overlay').style.display = 'flex';
-                        document.getElementById('local-video').srcObject = stream;
-                        call.on('stream', remoteStream => {
-                            document.getElementById('remote-video').srcObject = remoteStream;
-                        });
-                        currentCall = call;
-                    });
+            peer.on('call', async (call) => {
+                if(confirm("Incoming call from partner. Answer?")) {
+                    myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    call.answer(myStream);
+                    handleCall(call);
                 }
             });
-        });
+        };
 
-        function showChat() {
+        function showApp() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('chat-app').style.display = 'flex';
+            document.getElementById('display-code').innerText = "Room: " + secretCode;
+        }
+
+        function setupConn() {
+            conn.on('data', (data) => {
+                appendMsg(data, 'received');
+                if("vibrate" in navigator) navigator.vibrate([50, 100, 50]);
+            });
         }
 
         async function startCall(video) {
             try {
                 myStream = await navigator.mediaDevices.getUserMedia({ video: video, audio: true });
-                document.getElementById('call-overlay').style.display = 'flex';
-                document.getElementById('local-video').srcObject = myStream;
-                
-                const targetId = "babai-call-" + secretCode;
-                const call = peer.call(targetId, myStream);
-                
-                call.on('stream', remoteStream => {
-                    document.getElementById('remote-video').srcObject = remoteStream;
-                });
-                currentCall = call;
-            } catch (err) { alert("Camera/Mic Permission Denied"); }
+                const call = peer.call("babai-final-" + secretCode, myStream);
+                handleCall(call);
+            } catch (e) { alert("Please allow camera/mic access."); }
+        }
+
+        function handleCall(call) {
+            currentCall = call;
+            document.getElementById('call-overlay').style.display = 'flex';
+            document.getElementById('local-video').srcObject = myStream;
+            call.on('stream', (remoteStream) => {
+                document.getElementById('remote-video').srcObject = remoteStream;
+            });
         }
 
         function endCall() {
-            if (currentCall) currentCall.close();
-            if (myStream) myStream.getTracks().forEach(track => track.stop());
+            if(currentCall) currentCall.close();
+            if(myStream) myStream.getTracks().forEach(t => t.stop());
             document.getElementById('call-overlay').style.display = 'none';
-        }
-
-        function setupEvents() {
-            conn.on('data', (data) => appendMsg(data, 'received'));
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            if(!input.value.trim()) return;
-            const data = { text: input.value, sender: myName };
-            conn.send(data);
-            appendMsg(data, 'sent');
-            input.value = "";
         }
 
         function appendMsg(data, type) {
             const win = document.getElementById('chat-window');
-            win.innerHTML += `<div class="msg ${type}">${data.text}</div>`;
+            let content = data.type === 'text' ? `<div>${data.text}</div>` : 
+                          data.type === 'img' ? `<img src="${data.url}" class="media-content">` :
+                          `<video src="${data.url}" controls class="media-content"></video>`;
+            
+            win.innerHTML += `
+                <div class="msg ${type}">
+                    <span class="sender-name">${data.sender}</span>
+                    ${content}
+                </div>`;
             win.scrollTop = win.scrollHeight;
-            if(type === 'received' && "vibrate" in navigator) navigator.vibrate(100);
         }
+
+        document.getElementById('sendBtn').onclick = () => {
+            const msg = document.getElementById('messageInput').value;
+            if(!msg || !conn) return;
+            const data = { type: 'text', text: msg, sender: myName };
+            conn.send(data);
+            appendMsg(data, 'sent');
+            document.getElementById('messageInput').value = "";
+        };
+
+        document.getElementById('fileInput').onchange = (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                const data = { type: file.type.startsWith('image') ? 'img' : 'vid', url: reader.result, sender: myName };
+                conn.send(data);
+                appendMsg(data, 'sent');
+            };
+            reader.readAsDataURL(file);
+        };
     </script>
 </body>
 </html>
