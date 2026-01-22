@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bold Messenger | P2P Direct</title>
+    <title>Bold Messenger Pro</title>
     
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
@@ -15,67 +15,69 @@
             --wa-msg-out: #005c4b;
             --wa-text: #e9edef;
             --wa-accent: #00a884;
+            --wa-link: #34b7f1;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: -apple-system, sans-serif; 
+            font-family: -apple-system, system-ui, sans-serif; 
             background-color: var(--wa-bg); color: var(--wa-text);
             overflow: hidden;
         }
 
-        /* --- Login Screen --- */
+        /* --- Login Overlay --- */
         #login-screen {
             position: fixed; inset: 0; background: var(--wa-bg); z-index: 2000;
             display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
         }
 
         .login-card {
-            background: var(--wa-panel); padding: 30px; border-radius: 15px; width: 100%; max-width: 350px; text-align: center;
+            background: var(--wa-panel); padding: 30px; border-radius: 20px; width: 100%; max-width: 360px; text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
 
         input[type="text"] {
-            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333;
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333;
             background: #2a3942; color: white; outline: none; font-size: 16px;
         }
 
         .btn-join {
-            width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--wa-accent);
-            color: white; font-weight: bold; cursor: pointer;
+            width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--wa-accent);
+            color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px;
         }
 
-        /* --- Chat UI --- */
-        #chat-app { 
-            display: none; flex-direction: column; height: 100vh; height: -webkit-fill-available;
-        }
+        /* --- Chat Main --- */
+        #chat-app { display: none; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
 
         header {
             background: var(--wa-panel); padding: 10px 15px; display: flex; 
-            align-items: center; justify-content: space-between; height: 60px;
+            align-items: center; justify-content: space-between; height: 65px; flex-shrink: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         #chat-window {
             flex: 1; overflow-y: auto; padding: 15px; display: flex; 
-            flex-direction: column; gap: 8px;
+            flex-direction: column; gap: 10px;
             background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            background-blend-mode: overlay; background-size: 400px;
+            background-blend-mode: overlay; background-size: 500px;
         }
 
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 10px; font-size: 15px; word-wrap: break-word; }
+        .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
         .sent { align-self: flex-end; background: var(--wa-msg-out); border-top-right-radius: 2px; }
         .received { align-self: flex-start; background: var(--wa-msg-in); border-top-left-radius: 2px; }
 
-        .sender-tag { font-size: 11px; font-weight: bold; color: var(--wa-accent); margin-bottom: 2px; }
-        .media-preview { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        .sender-tag { font-size: 11px; font-weight: 700; color: var(--wa-accent); margin-bottom: 3px; }
+        .media-preview { max-width: 100%; border-radius: 10px; margin-top: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
 
-        /* --- Footer --- */
+        /* --- Input Bar --- */
         footer {
             background: var(--wa-panel); padding: 10px; display: flex; 
-            align-items: center; gap: 10px; width: 100%;
+            align-items: center; gap: 12px; width: 100%; flex-shrink: 0;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
         }
 
-        .input-container {
+        .input-group {
             flex: 1; background: #2a3942; border-radius: 25px; 
             display: flex; align-items: center; padding: 0 15px;
         }
@@ -85,44 +87,51 @@
             padding: 12px 0; outline: none; font-size: 16px;
         }
 
-        .btn-send {
-            width: 45px; height: 45px; background: var(--wa-accent); 
+        .btn-round {
+            width: 48px; height: 48px; background: var(--wa-accent); 
             border-radius: 50%; display: flex; align-items: center; 
             justify-content: center; border: none; color: white; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
-        #status-bar { font-size: 10px; text-align: center; background: #111; color: #888; }
+        #status-strip { font-size: 11px; text-align: center; background: #000; color: #aaa; padding: 5px; letter-spacing: 0.5px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h2 style="color: var(--wa-accent)">Bold Messenger</h2>
-            <p style="font-size: 12px; opacity: 0.7;">P2P Direct Connect (No Database)</p>
-            <input type="text" id="userName" placeholder="Your Name">
-            <input type="text" id="chatCode" placeholder="Shared Secret Code">
-            <button class="btn-join" id="joinBtn">CONNECT</button>
-            <p id="wait-msg" style="font-size: 11px; margin-top: 10px; display:none;">Initializing connection...</p>
+            <h2 style="color: var(--wa-accent); margin:0;">Bold Messenger</h2>
+            <p style="font-size: 12px; opacity: 0.7; margin-bottom: 20px;">Direct P2P • No Cloud Storage</p>
+            <input type="text" id="userName" placeholder="Display Name">
+            <input type="text" id="chatCode" placeholder="Secret Room Code">
+            <button class="btn-join" id="joinBtn">START CHAT</button>
+            <p id="loader" style="display:none; color: var(--wa-accent); font-size: 12px; margin-top:15px; animation: pulse 1.5s infinite;">Searching for partner...</p>
         </div>
     </div>
 
     <div id="chat-app">
-        <div id="status-bar">Connecting...</div>
+        <div id="status-strip">Network Status: Offline</div>
         <header>
-            <div style="font-weight: bold;" id="displayCode">Code</div>
-            <div style="font-size: 12px; color: #f15c5c; cursor: pointer;" onclick="location.reload()">Exit</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 35px; height: 35px; background: #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;">👥</div>
+                <div>
+                    <div id="displayCode" style="font-weight: bold; font-size: 14px;">Room</div>
+                    <div id="peer-status" style="font-size: 11px; color: #888;">Connecting...</div>
+                </div>
+            </div>
+            <div style="font-size: 20px; cursor: pointer;" onclick="location.reload()">🔚</div>
         </header>
 
         <div id="chat-window"></div>
 
         <footer>
-            <label for="fileInput" style="font-size: 24px; cursor: pointer;">📎</label>
+            <label for="fileInput" style="font-size: 26px; cursor: pointer;">📎</label>
             <input type="file" id="fileInput" accept="image/*,video/*" hidden>
-            <div class="input-container">
+            <div class="input-group">
                 <input type="text" id="messageInput" placeholder="Message">
             </div>
-            <button class="btn-send" id="sendBtn">🚀</button>
+            <button class="btn-round" id="sendBtn">🚀</button>
         </footer>
     </div>
 
@@ -131,128 +140,144 @@
         let myName = "";
         let secretCode = "";
 
-        const loginScreen = document.getElementById('login-screen');
-        const chatApp = document.getElementById('chat-app');
-        const chatWindow = document.getElementById('chat-window');
-        const msgInput = document.getElementById('messageInput');
-        const statusBar = document.getElementById('status-bar');
+        const peerConfig = {
+            config: {
+                'iceServers': [
+                    { url: 'stun:stun.l.google.com:19302' },
+                    { url: 'stun:stun1.l.google.com:19302' },
+                    { url: 'stun:stun2.l.google.com:19302' }
+                ]
+            }
+        };
 
         document.getElementById('joinBtn').addEventListener('click', () => {
             myName = document.getElementById('userName').value.trim();
-            secretCode = document.getElementById('chatCode').value.trim();
+            secretCode = document.getElementById('chatCode').value.trim().toLowerCase();
 
-            if (!myName || !secretCode) return alert("Enter Name and Code");
+            if (!myName || !secretCode) return alert("Please enter name and code");
             
-            document.getElementById('wait-msg').style.display = 'block';
+            document.getElementById('loader').style.display = 'block';
+            const roomId = "bold-v2-" + secretCode;
+            
+            peer = new Peer(roomId, peerConfig);
 
-            // Initialize Peer with the Secret Code as the ID
-            // NOTE: In a P2P app, one person "hosts" the code. 
-            // We use a prefix to make the Peer ID unique to your app.
-            const peerId = "bold-" + secretCode;
-            peer = new Peer(peerId);
-
-            peer.on('open', (id) => {
-                console.log('My ID is: ' + id);
-                statusBar.innerText = "Waiting for partner to join with code: " + secretCode;
-                loginScreen.style.display = 'none';
-                chatApp.style.display = 'flex';
-                document.getElementById('displayCode').innerText = myName;
+            peer.on('open', () => {
+                showChat();
+                document.getElementById('status-strip').innerText = "HOSTING ROOM: " + secretCode;
             });
 
-            // If someone else already used the code, we connect to them
             peer.on('error', (err) => {
                 if (err.type === 'unavailable-id') {
-                    // Code is taken, so we are the "joiner"
-                    peer = new Peer(); // Create random ID for ourselves
+                    // Host exists, join as peer
+                    peer = new Peer(null, peerConfig);
                     peer.on('open', () => {
-                        conn = peer.connect("bold-" + secretCode);
-                        setupConnection();
+                        conn = peer.connect(roomId, { reliable: true });
+                        initEvents();
+                        showChat();
                     });
                 } else {
-                    alert("Connection error: " + err.type);
+                    alert("Network Error: " + err.type);
                     location.reload();
                 }
             });
 
-            // Listen for incoming connection (If we are the "host")
             peer.on('connection', (c) => {
                 conn = c;
-                setupConnection();
+                initEvents();
             });
         });
 
-        function setupConnection() {
+        function showChat() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('chat-app').style.display = 'flex';
+            document.getElementById('displayCode').innerText = "Room: " + secretCode;
+        }
+
+        function initEvents() {
             conn.on('open', () => {
-                statusBar.innerText = "Connected to Partner";
-                statusBar.style.color = "var(--wa-accent)";
-                // Send name to partner
-                conn.send({ type: 'system', text: myName + " joined the chat" });
+                document.getElementById('status-strip').innerText = "CONNECTED SECURELY";
+                document.getElementById('status-strip').style.color = "var(--wa-accent)";
+                document.getElementById('peer-status').innerText = "Partner is online";
+                document.getElementById('peer-status').style.color = "var(--wa-accent)";
+                
+                conn.send({ type: 'sys', text: myName + " joined", sender: 'System' });
+                vibratePhone(100); 
             });
 
             conn.on('data', (data) => {
-                appendMessage(data, 'received');
+                appendMsg(data, 'received');
+                vibratePhone([50, 100, 50]); // Distinct vibration for new message
             });
 
             conn.on('close', () => {
-                statusBar.innerText = "Partner disconnected";
-                statusBar.style.color = "#f15c5c";
+                document.getElementById('status-strip').innerText = "PARTNER DISCONNECTED";
+                document.getElementById('status-strip').style.color = "#f15c5c";
+                document.getElementById('peer-status').innerText = "Offline";
             });
         }
 
-        function appendMessage(data, side) {
+        function appendMsg(data, type) {
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             let content = "";
 
-            if (data.type === 'text' || data.type === 'system') {
+            if (data.type === 'text' || data.type === 'sys') {
                 content = `<div>${data.text}</div>`;
-            } else if (data.type === 'image') {
+            } else if (data.type === 'img') {
                 content = `<img src="${data.url}" class="media-preview">`;
-            } else if (data.type === 'video') {
+            } else if (data.type === 'vid') {
                 content = `<video src="${data.url}" controls class="media-preview"></video>`;
             }
 
-            const html = `
-                <div class="msg ${side === 'sent' ? 'sent' : 'received'}">
-                    <div class="sender-tag">${side === 'sent' ? 'You' : data.sender}</div>
+            const bubble = `
+                <div class="msg ${type === 'sent' ? 'sent' : 'received'}">
+                    <div class="sender-tag">${type === 'sent' ? 'You' : data.sender}</div>
                     ${content}
-                    <div style="font-size:10px; opacity:0.5; text-align:right; margin-top:4px;">${time}</div>
+                    <div style="font-size:10px; opacity:0.4; text-align:right; margin-top:5px;">${time}</div>
                 </div>
             `;
-            chatWindow.innerHTML += html;
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            const win = document.getElementById('chat-window');
+            win.innerHTML += bubble;
+            win.scrollTo({ top: win.scrollHeight, behavior: 'smooth' });
         }
 
-        function sendMessage() {
-            const text = msgInput.value.trim();
-            if (!text || !conn) return;
-
-            const data = { type: 'text', text: text, sender: myName };
-            conn.send(data);
-            appendMessage(data, 'sent');
-            msgInput.value = "";
+        function vibratePhone(pattern) {
+            if ("vibrate" in navigator) {
+                navigator.vibrate(pattern);
+            }
         }
 
-        // File handling (P2P sends files as ArrayBuffers/Blobs)
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            const input = document.getElementById('messageInput');
+            const val = input.value.trim();
+            if (!val || !conn) return;
+
+            const d = { type: 'text', text: val, sender: myName };
+            conn.send(d);
+            appendMsg(d, 'sent');
+            input.value = "";
+        });
+
         document.getElementById('fileInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file || !conn) return;
-
+            
             const reader = new FileReader();
             reader.onload = () => {
-                const type = file.type.startsWith('image') ? 'image' : 'video';
-                const data = {
-                    type: type,
-                    url: reader.result, // DataURL
+                const d = {
+                    type: file.type.startsWith('image') ? 'img' : 'vid',
+                    url: reader.result,
                     sender: myName
                 };
-                conn.send(data);
-                appendMessage(data, 'sent');
+                conn.send(d);
+                appendMsg(d, 'sent');
             };
             reader.readAsDataURL(file);
         });
 
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
-        msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        // Mobile Fix: prevent UI bounce on keyboard
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('sendBtn').click();
+        });
     </script>
 </body>
 </html>
